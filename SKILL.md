@@ -1,9 +1,9 @@
 ---
 name: GitLab CI Speedup
-description: Audit real GitLab CI runs to find long-pole jobs and wasted runner minutes, then plan or implement measured fixes to .gitlab-ci.yml. Use when pipelines are slow, merges wait too long, CI cost is high, or the user asks to optimize GitLab CI. Do not use to author a pipeline from scratch or for security-only audits.
+description: Audit real GitLab CI runs to find long-pole jobs and wasted runner minutes, then plan or implement measured fixes to .gitlab-ci.yml, regardless of language or framework. Use when pipelines are slow, merges wait too long, CI cost is high, or the user asks to optimize GitLab CI. Do not use to author a pipeline from scratch or for security-only audits.
 license: MIT
 metadata:
-  version: 0.2.0
+  version: 0.3.0
   upstream: starslingdev/skills ci-speedup, mesilov/gitlab-ci-performance-skill, GitLab Well-Architected gitlab-ci-skill
 ---
 
@@ -28,6 +28,15 @@ Diagnose from real runs, change one thing at a time, and verify with the same me
 
 A request such as “why is CI slow?” or “audit the pipeline” is audit mode, not permission to edit YAML. Ask before switching modes.
 
+## Neutrality
+
+This skill is language-, framework-, and project-agnostic. It targets GitLab CI, not a particular runtime, package manager, test runner, database, report format, or directory layout.
+
+- Discover the repository's own install, lint, build, test, and deploy commands before proposing changes.
+- Use the repository's existing container, virtual environment, toolchain, and service definitions. Do not assume a language or framework.
+- Treat examples containing `<...>` as placeholders to fill from the repository, not literal commands.
+- Do not recommend a pattern only because it is common in one ecosystem. Tie it to measured evidence in this repository.
+
 ## 1. Preflight
 
 Identify the repository, GitLab host, and the wait that actually matters.
@@ -36,7 +45,9 @@ Identify the repository, GitLab host, and the wait that actually matters.
 git remote -v
 glab auth status
 glab repo view --output json | jq '{id,path_with_namespace,default_branch,web_url}'
-command -v glab jq python3 docker gitlab-ci-local glci
+command -v glab jq python3
+# Optional local validation tools:
+command -v docker podman gitlab-ci-local glci || true
 ```
 
 Locate the CI entrypoint and its local includes:

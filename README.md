@@ -6,6 +6,8 @@ It samples recent runs with `glab`, separates developer wait from runner cost, f
 
 The default mode is **read-only**. Implementation is an explicit opt-in.
 
+The skill is language-, framework-, and project-agnostic. It targets GitLab CI, and discovers each repository's own install, lint, build, test, and deploy commands. Examples use `<placeholders>` rather than assuming a package manager, test runner, database, or directory layout.
+
 ## Modes
 
 | Mode | Trigger | Behavior |
@@ -56,7 +58,7 @@ The directory name is the skill ID. Keep it as `gitlab-ci-speedup`.
 - `glab`, authenticated against the GitLab host that owns the project
 - `jq`
 - `python3` 3.9+
-- Optional: `gitlab-ci-local` or `glci` for local YAML validation, and Docker for container parity
+- Optional: `gitlab-ci-local` or `glci` for local YAML validation, and a container engine (Docker/Podman) for container parity
 
 Check auth:
 

@@ -36,7 +36,7 @@ workflow:
 
 **Cost:** Wall clock equal to the whole suite.
 
-**Fix:** Split by test directory, test group, or `parallel:matrix` if the test runner reports per-shard results. Aggregate JUnit reports so the pipeline still shows one coherent result.
+**Fix:** Split by test directory, test group, or `parallel:matrix` if the test runner reports per-shard results. Aggregate the test reports so the pipeline still shows one coherent result.
 
 **Caveat:** Sharding multiplies setup time and runner minutes. It helps wait, not cost. If the suite cannot be partitioned safely, or setup dominates, sharding can make things worse. Do not shard a 4-minute job into eight 3-minute jobs.
 
@@ -62,19 +62,17 @@ workflow:
 cache:
   key:
     files:
-      - composer.lock
-      - package-lock.json
+      - <lockfile>
   paths:
-    - vendor/
-    - node_modules/
+    - <dependency-dir>/
   policy: pull-push
 ```
 
-**Caveat:** GitLab supports a limited number of files in `cache:key:files` (historically two). Use one lockfile per ecosystem or combine hashes. Shared runners do not guarantee cache locality; a cache hit on one runner may miss on another. Measure hit rate before claiming a win. Do not cache generated artifacts that must be fresh.
+**Caveat:** GitLab supports a limited number of files in `cache:key:files` (historically two). Use one lockfile per dependency manager or combine hashes. Shared runners do not guarantee cache locality; a cache hit on one runner may miss on another. Measure hit rate before claiming a win. Do not cache generated artifacts that must be fresh.
 
 ## P6. Dependencies installed in every job
 
-**Detect:** `before_script` runs `composer install`, `npm ci`, `bundle install`, or equivalent in many jobs.
+**Detect:** `before_script` runs the project's dependency install command in many jobs.
 
 **Cost:** Repeated minutes multiplied by job count.
 
@@ -84,27 +82,27 @@ cache:
 
 ## P7. Oversized or immortal artifacts
 
-**Detect:** `artifacts.paths` includes `vendor/`, `node_modules/`, logs, coverage HTML, or entire build directories; no `expire_in`; `when: always` on large outputs.
+**Detect:** `artifacts.paths` includes dependency directories, build outputs, logs, coverage HTML, or entire workspace directories; no `expire_in`; `when: always` on large outputs.
 
 **Cost:** Storage, upload/download time, and runner minutes.
 
 **Fix:** Publish only what downstream jobs or humans need. Set `expire_in`. Use `when: on_success` unless failure logs are required. Use `dependencies` or `needs:artifacts` to narrow downloads.
 
-**Caveat:** Failure logs and test reports are often required for debugging. Keep small JUnit/coverage summaries even when trimming the rest.
+**Caveat:** Failure logs and test reports are often required for debugging. Keep the small machine-readable test/coverage summaries even when trimming the rest.
 
-## P8. Docker builds without layer cache
+## P8. Container image builds without layer cache
 
-**Detect:** `docker build` in CI with no `--cache-from`, no BuildKit cache, or a Dockerfile that copies the whole repo before installing dependencies.
+**Detect:** A container image is built in CI with no build cache, or the container definition copies the whole repository before installing dependencies.
 
 **Cost:** Full rebuild every pipeline.
 
-**Fix:** Use BuildKit with a registry or local cache, reorder the Dockerfile to copy lockfiles first, and use multi-stage builds.
+**Fix:** Use a registry or local build cache, reorder the container definition to copy lockfiles first, and use multi-stage builds.
 
 **Caveat:** Registry cache needs credentials and cleanup. A stale cache can hide dependency updates; invalidate on lockfile changes.
 
 ## P9. `rules:changes` missing or too broad
 
-**Detect:** Docs-only or frontend-only changes trigger backend, database, and deploy jobs. Or `rules:changes` is used in a way that skips required checks unexpectedly.
+**Detect:** Changes to one component or documentation trigger jobs for unrelated components. Or `rules:changes` is used in a way that skips required checks unexpectedly.
 
 **Cost:** Wasted runner minutes and unnecessary pipeline wait.
 

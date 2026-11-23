@@ -103,11 +103,11 @@ else
   echo "warning: gitlab-ci-local is not installed; skipping local job listing" >&2
 fi
 
-if command -v docker >/dev/null 2>&1; then
+if command -v docker >/dev/null 2>&1 || command -v podman >/dev/null 2>&1; then
   echo
-  echo "info: Docker is available; use the same image as CI for parity"
+  echo "info: a container engine is available; use the same image as CI for parity"
 else
-  echo "warning: Docker is not installed; local parity may be incomplete" >&2
+  echo "warning: no container engine found; local parity may be incomplete" >&2
 fi
 
 echo
