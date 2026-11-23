@@ -1,0 +1,11 @@
+# Local audit output
+.gitlab-ci-speedup/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/
